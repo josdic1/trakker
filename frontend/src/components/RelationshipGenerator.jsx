@@ -12,7 +12,6 @@ const initialState = {
 };
 
 function reducer(state, action) {
-  // This reducer logic remains the same
   switch (action.type) {
     case 'SET_STEP':
       return { ...state, step: action.payload };
@@ -24,28 +23,37 @@ function reducer(state, action) {
       if (state.entities.length <= 1) return state;
       return { ...state, entities: state.entities.filter((_, i) => i !== action.payload) };
     case 'UPDATE_ENTITY_NAME':
-      return { ...state, entities: state.entities.map((e, i) => i === action.payload.index ? { ...e, name: action.payload.name } : e) };
+      // Auto-clean: CamelCase, no spaces/special chars
+      const cleanName = action.payload.name
+        .replace(/\s+/g, '')
+        .replace(/[^a-zA-Z]/g, '')
+        .replace(/^\w/, c => c.toUpperCase());
+      return { ...state, entities: state.entities.map((e, i) => 
+        i === action.payload.index ? { ...e, name: cleanName } : e
+      ) };
     case 'SET_CURRENT_ENTITY_INDEX':
-        return { ...state, currentEntityIndex: action.payload };
+      return { ...state, currentEntityIndex: action.payload };
     case 'ADD_FIELD': {
-        const newEntities = [...state.entities];
-        newEntities[action.payload].fields.push({ name: '', type: 'String' });
-        return { ...state, entities: newEntities };
+      const newEntities = [...state.entities];
+      newEntities[action.payload].fields.push({ name: '', type: 'String' });
+      return { ...state, entities: newEntities };
     }
     case 'REMOVE_FIELD': {
-        const newEntities = [...state.entities];
-        newEntities[action.payload.entityIndex].fields = newEntities[action.payload.entityIndex].fields.filter((_, i) => i !== action.payload.fieldIndex);
-        return { ...state, entities: newEntities };
+      const newEntities = [...state.entities];
+      newEntities[action.payload.entityIndex].fields = newEntities[action.payload.entityIndex].fields.filter((_, i) => i !== action.payload.fieldIndex);
+      return { ...state, entities: newEntities };
     }
     case 'UPDATE_FIELD': {
-        const newEntities = [...state.entities];
-        newEntities[action.payload.entityIndex].fields[action.payload.fieldIndex][action.payload.key] = action.payload.value;
-        return { ...state, entities: newEntities };
+      const newEntities = [...state.entities];
+      newEntities[action.payload.entityIndex].fields[action.payload.fieldIndex][action.payload.key] = action.payload.value;
+      return { ...state, entities: newEntities };
     }
     case 'SET_RELATIONSHIPS':
-        return { ...state, relationships: action.payload };
+      return { ...state, relationships: action.payload };
     case 'UPDATE_RELATIONSHIP':
-      return { ...state, relationships: state.relationships.map((r, i) => i === action.payload.index ? { ...r, [action.payload.key]: action.payload.value } : r) };
+      return { ...state, relationships: state.relationships.map((r, i) => 
+        i === action.payload.index ? { ...r, [action.payload.key]: action.payload.value } : r
+      ) };
     case 'SET_GENERATED_CODE':
       return { ...state, generatedCode: action.payload };
     case 'RESET':
@@ -85,10 +93,10 @@ function FullSchemaGenerator() {
   const pluralize = (word) => {
     if (!word) return '';
     if (word.endsWith('y') && !['a', 'e', 'i', 'o', 'u'].includes(word.slice(-2, -1).toLowerCase())) {
-        return word.slice(0, -1) + 'ies';
+      return word.slice(0, -1) + 'ies';
     }
     if (word.endsWith('s') || word.endsWith('x') || word.endsWith('z') || word.endsWith('ch') || word.endsWith('sh')) {
-        return word + 'es';
+      return word + 'es';
     }
     return word + 's';
   };
@@ -105,17 +113,17 @@ function FullSchemaGenerator() {
             <p className="text-gray-600">Build your database models and Marshmallow schemas</p>
           </div>
 
-           <div className="flex justify-center mb-8">
-             <div className="flex items-center gap-2">
-               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>1</div>
-               <ArrowRight className="w-5 h-5 text-gray-400" />
-               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>2</div>
-               <ArrowRight className="w-5 h-5 text-gray-400" />
-               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>3</div>
-               <ArrowRight className="w-5 h-5 text-gray-400" />
-               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>4</div>
-             </div>
-           </div>
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>1</div>
+              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>2</div>
+              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>3</div>
+              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}`}>4</div>
+            </div>
+          </div>
 
           {step === 1 && (
             <div>
@@ -158,12 +166,15 @@ function FullSchemaGenerator() {
               {entities[currentEntityIndex] && (
                 <div className="bg-gray-50 p-6 rounded-lg mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Fields for {entities[currentEntityIndex].name}</h3>
-                  <p className="text-sm text-gray-600 mb-4">💡 Don't add id, created_at, or updated_at - those are automatic!</p>
+                  <p className="text-sm text-gray-600 mb-4">💡 Don't add id, created_at, or updated_at - those are automatic! e.g., title, is_active, release_date</p>
                   {entities[currentEntityIndex].fields.map((field, fieldIndex) => (
                     <div key={fieldIndex} className="flex gap-2 mb-3">
                       <input type="text" value={field.name} onChange={(e) => dispatch({ type: 'UPDATE_FIELD', payload: { entityIndex: currentEntityIndex, fieldIndex, key: 'name', value: e.target.value } })} placeholder="Field name (e.g., title, name, bio)" className="flex-1 px-3 py-2 border border-gray-300 rounded" />
                       <select value={field.type} onChange={(e) => dispatch({ type: 'UPDATE_FIELD', payload: { entityIndex: currentEntityIndex, fieldIndex, key: 'type', value: e.target.value } })} className="px-3 py-2 border border-gray-300 rounded">
-                        <option value="String">String</option><option value="Integer">Integer</option>
+                        <option value="String">String (text)</option>
+                        <option value="Integer">Integer (number)</option>
+                        <option value="Boolean">Boolean (true/false)</option>
+                        <option value="DateTime">DateTime (date/time)</option>
                       </select>
                       <button onClick={() => dispatch({ type: 'REMOVE_FIELD', payload: { entityIndex: currentEntityIndex, fieldIndex } })} className="px-3 text-red-500 hover:text-red-700"><Trash2 className="w-5 h-5" /></button>
                     </div>
@@ -213,6 +224,35 @@ function FullSchemaGenerator() {
                   </div>
                 </div>
               ))}
+              {/* Quick Preview Table */}
+              <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                <h4 className="font-bold text-green-800 mb-2">Quick Preview:</h4>
+                <table className="w-full text-sm border-collapse border border-green-300">
+                  <thead>
+                    <tr className="bg-green-100">
+                      <th className="p-2 border border-green-300">From</th>
+                      <th className="p-2 border border-green-300">To</th>
+                      <th className="p-2 border border-green-300">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {relationships.map((rel, index) => 
+                      rel.entity1HasMany !== null && rel.entity2HasMany !== null && (
+                        <tr key={index}>
+                          <td className="p-2 border border-green-300">{rel.entity1}</td>
+                          <td className="p-2 border border-green-300">{rel.entity2}</td>
+                          <td className="p-2 border border-green-300">
+                            {rel.entity1HasMany && rel.entity2HasMany ? 'Many-to-Many' : 
+                              (rel.entity1HasMany ? `One-to-Many (${rel.entity1} → ${pluralize(rel.entity2)})` : 
+                                (rel.entity2HasMany ? `One-to-Many (${rel.entity2} → ${pluralize(rel.entity1)})` : 'None')
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
               <div className="flex gap-4">
                 <button onClick={() => dispatch({ type: 'SET_STEP', payload: 2 })} className="px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-100">← Back</button>
                 <button onClick={handleGenerateCode} disabled={relationships.some(r => r.entity1HasMany === null || r.entity2HasMany === null)} className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed">Generate Complete Schema →</button>
@@ -221,35 +261,35 @@ function FullSchemaGenerator() {
           )}
 
           {step === 4 && (
-             <div>
-               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><Code className="w-8 h-8 text-green-600" />Your Complete Schema is Ready!</h2>
-               <div className="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm mb-6 max-h-96 overflow-y-auto">
-                 <div className="flex justify-between items-center mb-4 sticky top-0 bg-gray-900 pb-2">
-                   <h3 className="text-white font-bold">app/models.py</h3>
-                   <button onClick={() => { navigator.clipboard.writeText(generatedCode.models); alert('Models code copied!'); }} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold text-xs">📋 Copy Models</button>
-                 </div>
-                 <pre className="whitespace-pre-wrap leading-relaxed">{generatedCode.models}</pre>
-               </div>
-               <div className="bg-gray-900 text-blue-400 p-6 rounded-lg font-mono text-sm mb-6 max-h-96 overflow-y-auto">
-                 <div className="flex justify-between items-center mb-4 sticky top-0 bg-gray-900 pb-2">
-                   <h3 className="text-white font-bold">app/schemas.py</h3>
-                   <button onClick={() => { navigator.clipboard.writeText(generatedCode.schemas); alert('Schemas code copied!'); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-xs">📋 Copy Schemas</button>
-                 </div>
-                 <pre className="whitespace-pre-wrap leading-relaxed">{generatedCode.schemas}</pre>
-               </div>
-               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
-                 <h3 className="font-bold text-blue-900 mb-2">📝 Next Steps:</h3>
-                 <ol className="list-decimal list-inside space-y-1 text-blue-800">
-                   <li>Copy the <strong>models</strong> code into your <code className="bg-blue-200 px-2 py-1 rounded">app/models.py</code> file.</li>
-                   <li>Copy the <strong>schemas</strong> code into a new <code className="bg-blue-200 px-2 py-1 rounded">app/schemas.py</code> file.</li>
-                   <li>Ensure you have a <code className="bg-blue-200 px-2 py-1 rounded">app/extensions.py</code> with Marshmallow initialized (<code className="bg-blue-200 px-2 py-1 rounded">ma = Marshmallow()</code>).</li>
-                   <li>Run migrations: <code className="bg-blue-200 px-2 py-1 rounded">flask db migrate</code></li>
-                   <li>Apply migrations: <code className="bg-blue-200 px-2 py-1 rounded">flask db upgrade</code></li>
-                 </ol>
-               </div>
-               <button onClick={() => dispatch({ type: 'RESET' })} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700">Create Another Schema</button>
-             </div>
-           )}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><Code className="w-8 h-8 text-green-600" />Your Complete Schema is Ready!</h2>
+              <div className="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm mb-6 max-h-96 overflow-y-auto">
+                <div className="flex justify-between items-center mb-4 sticky top-0 bg-gray-900 pb-2">
+                  <h3 className="text-white font-bold">app/models.py</h3>
+                  <button onClick={() => { navigator.clipboard.writeText(generatedCode.models); alert('Models code copied!'); }} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold text-xs">📋 Copy Models</button>
+                </div>
+                <pre className="whitespace-pre-wrap leading-relaxed">{generatedCode.models}</pre>
+              </div>
+              <div className="bg-gray-900 text-blue-400 p-6 rounded-lg font-mono text-sm mb-6 max-h-96 overflow-y-auto">
+                <div className="flex justify-between items-center mb-4 sticky top-0 bg-gray-900 pb-2">
+                  <h3 className="text-white font-bold">app/schemas.py</h3>
+                  <button onClick={() => { navigator.clipboard.writeText(generatedCode.schemas); alert('Schemas code copied!'); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-xs">📋 Copy Schemas</button>
+                </div>
+                <pre className="whitespace-pre-wrap leading-relaxed">{generatedCode.schemas}</pre>
+              </div>
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-blue-900 mb-2">📝 Next Steps:</h3>
+                <ol className="list-decimal list-inside space-y-1 text-blue-800">
+                  <li>Copy the <strong>models</strong> code into your <code className="bg-blue-200 px-2 py-1 rounded">app/models.py</code> file.</li>
+                  <li>Copy the <strong>schemas</strong> code into a new <code className="bg-blue-200 px-2 py-1 rounded">app/schemas.py</code> file.</li>
+                  <li>Ensure you have a <code className="bg-blue-200 px-2 py-1 rounded">app/extensions.py</code> with Marshmallow initialized (<code className="bg-blue-200 px-2 py-1 rounded">ma = Marshmallow()</code>).</li>
+                  <li>Run migrations: <code className="bg-blue-200 px-2 py-1 rounded">flask db migrate</code></li>
+                  <li>Apply migrations: <code className="bg-blue-200 px-2 py-1 rounded">flask db upgrade</code></li>
+                </ol>
+              </div>
+              <button onClick={() => dispatch({ type: 'RESET' })} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700">Create Another Schema</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
